@@ -46,3 +46,6 @@ public void init(Player p, InventoryContents con, Object[] data) {
 }
 ```
 The InventoryContens is the management of the contents.
+
+
+See Examples `UsersGUI` and `ExampleUpdatingGUI`.
