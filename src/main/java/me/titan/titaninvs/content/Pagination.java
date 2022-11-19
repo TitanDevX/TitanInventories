@@ -72,7 +72,6 @@ public class Pagination {
 	 * @return
 	 */
 	public boolean hasNext(int page){
-		System.out.println("NEXT " + getPages() + " " + page);
 		return getPages()-1>page;
 	}
 	/**
@@ -102,7 +101,6 @@ public class Pagination {
 		if(items.size() < from){
 			return null;
 		}
-		System.out.println(items.size() + "BB");
 		int to = Math.min(items.size(),(page+1)*itemsPerPage);
 		int slot = isBoxed() ? 10 : 0;
 		for(int i =from;i<to;i++){

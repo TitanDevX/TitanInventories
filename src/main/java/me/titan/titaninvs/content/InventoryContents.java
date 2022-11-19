@@ -11,11 +11,13 @@ import java.util.HashMap;
 public class InventoryContents extends HashMap<Integer, ClickableItem> implements org.bukkit.inventory.InventoryHolder {
 	Inventory inventory;
 
+	String title;
 	final int size;
 	final int titanInv;
 
 
-	public InventoryContents(int size, int titanInv) {
+	public InventoryContents(String title, int size, int titanInv) {
+		this.title = title;
 		this.size = size;
 		this.titanInv = titanInv;
 	}
@@ -74,6 +76,14 @@ public class InventoryContents extends HashMap<Integer, ClickableItem> implement
 
 	public TitanInv getTitanInv() {
 		return TitanInv.getById(titanInv);
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getTitle() {
+		return title;
 	}
 
 	@Override

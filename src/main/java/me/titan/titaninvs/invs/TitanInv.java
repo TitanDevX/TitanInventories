@@ -67,14 +67,14 @@ public abstract class TitanInv{
 	 */
 	public void open(Player p, Object[] data){
 
-		InventoryContents con = new InventoryContents(size, id);
+		InventoryContents con = new InventoryContents(title,size, id);
 		if(shouldCacheInventory() && inventory != null){
 			p.openInventory(inventory);
 			return;
 		}
 		init(p,con,data);
 
-		Inventory inv = Bukkit.createInventory(con,size, ChatColor.translateAlternateColorCodes('&',title));
+		Inventory inv = Bukkit.createInventory(con,size, ChatColor.translateAlternateColorCodes('&',con.getTitle()));
 
 		con.setInventory(inv);
 		for(Map.Entry<Integer, ClickableItem> en : con.entrySet()){
@@ -93,7 +93,7 @@ public abstract class TitanInv{
 	 */
 	public void update(Player p, InventoryContents con){
 		Inventory inv = Bukkit.createInventory(con,size
-				, ChatColor.translateAlternateColorCodes('&',title));
+				, ChatColor.translateAlternateColorCodes('&',con.getTitle()));
 
 		for (Map.Entry<Integer, ClickableItem> en : con.entrySet()) {
 			inv.setItem(en.getKey(), en.getValue().getItem());
@@ -136,8 +136,8 @@ public abstract class TitanInv{
 			throw new IllegalCallerException("Cannot open page with no-pagination GUI!");
 		}
 
-		InventoryContents con = new InventoryContents(size, this.id);
-		Inventory inv = Bukkit.createInventory(con,size, ChatColor.translateAlternateColorCodes('&',title));
+		InventoryContents con = new InventoryContents(title,size, this.id);
+		Inventory inv = Bukkit.createInventory(con,size, ChatColor.translateAlternateColorCodes('&',con.getTitle()));
 		con.setInventory(inv);
 		currentPage = page;
 		init(p,con,data);
@@ -196,6 +196,10 @@ public abstract class TitanInv{
 		(previousPageButton = item).setConsumer((e) -> {
 			openPage((Player) e.getWhoClicked(),currentPage-1,data);
 		});
+	}
+
+	public String getTitle() {
+		return title;
 	}
 
 	/**

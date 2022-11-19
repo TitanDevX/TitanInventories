@@ -51,9 +51,7 @@ public class ExampleUpdatingInv extends UpdatingInv {
 	@Override
 	public void updateItems(Player p, InventoryContents con) {
 
-		System.out.println("Ee");
 		if(map == null) return;
-		System.out.println("Ee2");
 		if(currentIndex > 4){
 			currentIndex = 0;
 		}

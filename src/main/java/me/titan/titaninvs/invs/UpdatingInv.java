@@ -94,7 +94,7 @@ public abstract class UpdatingInv extends TitanInv {
 	 * @param p
 	 */
 	public void update(Player p) {
-		InventoryContents con = new InventoryContents(getSize(),getId());
+		InventoryContents con = new InventoryContents(getTitle(), getSize(),getId());
 		updateItems(p,con);
 		super.update(p, con);
 	}
