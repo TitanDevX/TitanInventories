@@ -50,7 +50,7 @@ public class UsersGUI extends TitanInv {
 		}
 		pagination(new Pagination(7,true).setItems(items));
 		setNextPageButton(26,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cNext page").getItemStack()), data);
-		setPreviousPageButtonPageButton(18,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()), data);
+	 	setPreviousPageButton(18,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()), data);
 	}
 
 	@Override

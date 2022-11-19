@@ -191,7 +191,7 @@ public abstract class TitanInv{
 	 * @param item item, the consumer of it will be overridden.
 	 * @param data data to be passed for {@link #openPage} function.
 	 */
-	public void setPreviousPageButtonPageButton(int slot, ClickableItem item, Object[] data){
+	public void setPreviousPageButton(int slot, ClickableItem item, Object[] data){
 		previousPageButtonSlot = slot;
 		(previousPageButton = item).setConsumer((e) -> {
 			openPage((Player) e.getWhoClicked(),currentPage-1,data);
