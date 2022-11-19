@@ -90,7 +90,7 @@ public class ItemBuilder {
 
 	public ItemBuilder enchants(Map<Enchantment, Integer> enchantMap){
 
-		current.addEnchantments(enchantMap);
+		current.addUnsafeEnchantments(enchantMap);
 
 		return this;
 
