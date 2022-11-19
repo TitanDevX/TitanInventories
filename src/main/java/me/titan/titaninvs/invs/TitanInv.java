@@ -132,15 +132,16 @@ public abstract class TitanInv{
 	 * @throws IllegalCallerException If this method is called while {@link #pagination} is not set.
 	 */
 	public void openPage(Player p, int page, Object[] data){
-		if(pagination == null){
-			throw new IllegalCallerException("Cannot open page with no-pagination GUI!");
-		}
+
 
 		InventoryContents con = new InventoryContents(title,size, this.id);
 		Inventory inv = Bukkit.createInventory(con,size, ChatColor.translateAlternateColorCodes('&',con.getTitle()));
 		con.setInventory(inv);
 		currentPage = page;
 		init(p,con,data);
+		if(pagination == null){
+			throw new IllegalCallerException("Cannot open page with no-pagination GUI!");
+		}
 		con.putAll( pagination.getPage(page,size));
 		if(nextPageButton != null && pagination.hasNext(page)){
 			con.put(nextPageButtonSlot,nextPageButton);
