@@ -14,7 +14,7 @@
 
 
 ## Maven Repository
-```
+```XML
 <repositories>
 	<repository>
 	    <id>jitpack.io</id>
@@ -22,7 +22,7 @@
 	</repository>
 </repositories>
 ```
-```
+```XML
 <dependency>
 	<groupId>com.github.TitanDevX</groupId>
 	<artifactId>TitanInventories</artifactId>
