@@ -60,7 +60,7 @@ public abstract class TitanInv{
 	 * Opens the inventory for player, calling the {@link #init(Player, InventoryContents, Object[])} function.
 	 *
 	 * <p></p>
-	 * Note: for paginated GUI use {@link #openPage(Player, int, Object[])}
+	 * Note: for paginated GUI use {@link #openPaged(Player, int, Object[])}
 	 *
 	 * @param p player
 	 * @param data data you want to pass to the init function.
@@ -107,7 +107,7 @@ public abstract class TitanInv{
 	 *<p></p>
 	 * Note: this function itself doesn't update the inventory,
 	 * it's recommend that you call it in {@link #init}
-	 * functions, otherwise you need to follow it with {@link #openPage} function.
+	 * functions, otherwise you need to follow it with {@link #openPaged} function.
 	 *
 	 * @param pagination
 	 */
@@ -131,7 +131,7 @@ public abstract class TitanInv{
 	 *
 	 * @throws IllegalCallerException If this method is called while {@link #pagination} is not set.
 	 */
-	public void openPage(Player p, int page, Object[] data){
+	public void openPaged(Player p, int page, Object[] data){
 
 
 		InventoryContents con = new InventoryContents(title,size, this.id);
@@ -156,6 +156,36 @@ public abstract class TitanInv{
 		p.openInventory(inv);
 	}
 
+	/**
+	 *
+	 * Open a page, assuming the inventory already is initialized.
+	 *
+	 * @param p
+	 * @param page
+	 */
+	protected void openPage(Player p, int page){
+
+
+		if(pagination == null){
+			throw new IllegalCallerException("Cannot open page with no-pagination GUI!");
+		}
+		InventoryContents con = new InventoryContents(title,size, this.id);
+		Inventory inv = Bukkit.createInventory(con,size, ChatColor.translateAlternateColorCodes('&',con.getTitle()));
+		con.setInventory(inv);
+		currentPage = page;
+		con.putAll( pagination.getPage(page,size));
+		if(nextPageButton != null && pagination.hasNext(page)){
+			con.put(nextPageButtonSlot,nextPageButton);
+		}
+		if(previousPageButton != null && pagination.hasPrevious(page)){
+			con.put(previousPageButtonSlot,previousPageButton);
+		}
+
+		for(Map.Entry<Integer, ClickableItem> en : con.entrySet()){
+			inv.setItem(en.getKey(),en.getValue().getItem());
+		}
+		p.openInventory(inv);
+	}
 	int nextPageButtonSlot;
 	ClickableItem nextPageButton;
 	int previousPageButtonSlot;
@@ -171,13 +201,13 @@ public abstract class TitanInv{
 	 *
 	 * @param slot slot for the item to be placed in.
 	 * @param item item, the consumer of it will be overridden.
-	 * @param data data to be passed for {@link #openPage} function.
+	 * @param data data to be passed for {@link #openPaged} function.
 	 */
 	public void setNextPageButton(int slot, ClickableItem item, Object[] data){
 
 		nextPageButtonSlot = slot;
 		(nextPageButton = item).setConsumer((e) -> {
-			openPage((Player) e.getWhoClicked(),currentPage+1, data);
+			openPage((Player) e.getWhoClicked(),currentPage+1);
 		});
 	}
 	/**
@@ -190,12 +220,12 @@ public abstract class TitanInv{
 	 *
 	 * @param slot slot for the item to be placed in.
 	 * @param item item, the consumer of it will be overridden.
-	 * @param data data to be passed for {@link #openPage} function.
+	 * @param data data to be passed for {@link #openPaged} function.
 	 */
 	public void setPreviousPageButton(int slot, ClickableItem item, Object[] data){
 		previousPageButtonSlot = slot;
 		(previousPageButton = item).setConsumer((e) -> {
-			openPage((Player) e.getWhoClicked(),currentPage-1,data);
+			openPage((Player) e.getWhoClicked(),currentPage-1);
 		});
 	}
 

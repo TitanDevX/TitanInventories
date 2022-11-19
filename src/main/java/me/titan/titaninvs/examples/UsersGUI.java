@@ -32,9 +32,9 @@ public class UsersGUI extends TitanInv {
 	}
 	public static void open(Player p, Collection<User> users){
 		if(instance == null){
-			(instance = new UsersGUI()).openPage(p,0, new Object[]{users});
+			(instance = new UsersGUI()).openPaged(p,0, new Object[]{users});
 		}else{
-			instance.openPage(p,0, new Object[]{users});
+			instance.openPaged(p,0, new Object[]{users});
 		}
 	}
 
