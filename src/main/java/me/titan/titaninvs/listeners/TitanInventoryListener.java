@@ -14,6 +14,7 @@ public class TitanInventoryListener implements Listener {
 
 
 		Player p = (Player) e.getWhoClicked();
+		if(e.getClickedInventory() == null || e.getClickedInventory().getHolder() == null) return;
 		if(!(e.getClickedInventory().getHolder() instanceof InventoryContents titanInv)){
 			return;
 		}
