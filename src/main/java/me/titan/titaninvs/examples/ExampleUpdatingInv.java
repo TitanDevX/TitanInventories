@@ -49,7 +49,7 @@ public class ExampleUpdatingInv extends UpdatingInv {
 	}
 
 	@Override
-	public void updateItems(Player p, InventoryContents con) {
+	public void updateItems(Player p, InventoryContents con, Object[] data) {
 
 		if(map == null) return;
 		if(currentIndex > 4){

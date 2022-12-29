@@ -26,6 +26,9 @@ public abstract class UpdatingInv extends TitanInv {
 
 	boolean updating;
 
+	Object[] data;
+	InventoryContents contents;
+
 	public UpdatingInv(String title, int size, long delay) {
 		super(title, size);
 		this.delay = delay;
@@ -46,14 +49,24 @@ public abstract class UpdatingInv extends TitanInv {
 		}).runTaskTimer(TitanInvAPI.getPlugin(),delay,delay);
 	}
 
+	@Override
+	public void init(Player p, InventoryContents con, Object[] data) {
+		this.data = data;
+		this.contents = con;
+
+	}
+
+
+
 	/**
 	 *
 	 * Updates items in the given {@link InventoryContents}
 	 *
 	 * @param p player
-	 * @param con contens to be updated.
+	 * @param con contents to be updated.
 	 */
-	public abstract void updateItems(Player p, InventoryContents con);
+	public abstract void updateItems(Player p, InventoryContents con, Object[] data);
+
 
 	@Override
 	public void onOpen(InventoryOpenEvent e) {
@@ -94,9 +107,12 @@ public abstract class UpdatingInv extends TitanInv {
 	 * @param p
 	 */
 	public void update(Player p) {
-		InventoryContents con = new InventoryContents(getTitle(), getSize(),getId());
-		updateItems(p,con);
-		super.update(p, con);
+		updateItems(p,this.contents,data);
+		super.update(p, contents);
+	}
+	public UpdatingInv setData(Object[] data){
+		this.data = data;
+		return this;
 	}
 
 	/**
