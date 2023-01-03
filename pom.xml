@@ -26,13 +26,6 @@
             <artifactId>spigot-api</artifactId>
             <version>1.18.2-R0.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>org.swerweigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.18.2-R0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${user.home}/Desktop/Java Projects/resources/spigot-1.16.5.jar</systemPath>
-        </dependency>
     </dependencies>
 
 </project>
