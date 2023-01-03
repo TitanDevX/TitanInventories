@@ -29,7 +29,6 @@ public abstract class TitanInv{
 	final String title;
 	final int size;
 
-	int currentPage = 0;
 	Pagination pagination;
 
 	private static Map<Integer, TitanInv> inventories = new HashMap<>();
@@ -59,46 +58,103 @@ public abstract class TitanInv{
 	 *
 	 * Opens the inventory for player, calling the {@link #init(Player, InventoryContents, Object[])} function.
 	 *
-	 * <p></p>
-	 * Note: for paginated GUI use {@link #openPaged(Player, int, Object[])}
+	 *
+	 * This is used for all types of inventories, paginated or not.
 	 *
 	 * @param p player
 	 * @param data data you want to pass to the init function.
 	 */
-	public void open(Player p, Object[] data){
+	public InventoryContents open(Player p, int page, Object[] data){
 
-		InventoryContents con = new InventoryContents(title,size, id);
+		InventoryContents con = new InventoryContents(title,size, id, page);
 		if(shouldCacheInventory() && inventory != null){
 			p.openInventory(inventory);
-			return;
+			return con;
 		}
 		init(p,con,data);
 
+		if(pagination != null){
+			con.putAll( pagination.getPage(page,size));
+			if(nextPageButton != null && pagination.hasNext(page)){
+				con.put(nextPageButtonSlot,nextPageButton);
+			}
+			if(previousPageButton != null && pagination.hasPrevious(page)){
+				con.put(previousPageButtonSlot,previousPageButton);
+			}
+		}
+
 		Inventory inv = Bukkit.createInventory(con,size, ChatColor.translateAlternateColorCodes('&',con.getTitle()));
 
-		con.setInventory(inv);
+
 		for(Map.Entry<Integer, ClickableItem> en : con.entrySet()){
 			inv.setItem(en.getKey(),en.getValue().getItem());
 		}
+		con.setInventory(inv);
 		this.inventory = inv;
 		p.openInventory(inv);
+		return con;
+	}
+	/**
+	 *
+	 * Opens the inventory for player, calling the {@link #init(Player, InventoryContents, Object[])} function.
+	 *
+	 * @param p player
+	 * @param data data you want to pass to the init function.
+	 *
+	*/
+	public InventoryContents open(Player p, Object[] data){
+		return open(p,0,data);
 	}
 
 	/**
 	 *
+	 * Open a specific page
+	 * <p>
+	 *     Note: {@link #pagination} must be set for this to work, use {@link #pagination(Pagination)} function.
+	 * </p>
+	 *
+	 * @param p player
+	 * @param page page (starting from 0)
+	 * @param data data to be passed to the {@link #init} function.
+	 *
+	 * @throws IllegalCallerException If this method is called while {@link #pagination} is not set.
+	 * @deprecated to be removed, call {@link #open(Player, int, Object[])} instead.
+	 */
+	@Deprecated
+	public void openPaged(Player p, int page, Object[] data){
+
+		if(pagination == null) {
+			throw new IllegalCallerException("Cannot open page with no-pagination GUI!");
+		}
+		open(p,page,data);
+	}
+	/**
+	 *
 	 * Updates the inventory with specific a {@link InventoryContents}
+	 *
+	 * <p></p>Note: this does not call any initialize function.
 	 *
 	 * @param p
 	 * @param con
 	 */
 	public void update(Player p, InventoryContents con){
-		Inventory inv = Bukkit.createInventory(con,size
-				, ChatColor.translateAlternateColorCodes('&',con.getTitle()));
+		Inventory inv = con.getInventory();
+		if(con.isTitleChanged()) {
+			inv = Bukkit.createInventory(con, size,
+					ChatColor.translateAlternateColorCodes('&', con.getTitle()));
+		}else{
+			inv.clear();
+		}
 
 		for (Map.Entry<Integer, ClickableItem> en : con.entrySet()) {
 			inv.setItem(en.getKey(), en.getValue().getItem());
 		}
-		p.openInventory(inv);
+		con.setInventory(inv);
+		if(con.isTitleChanged()){
+			p.openInventory(inv);
+			con.resetTitleChanged();
+		}
+
 	}
 
 	/**
@@ -118,43 +174,7 @@ public abstract class TitanInv{
 		return inventories.get(id);
 	}
 
-	/**
-	 *
-	 * Open a specific page
-	 * <p>
-	 *     Note: {@link #pagination} must be set for this to work, use {@link #pagination(Pagination)} function.
-	 * </p>
-	 *
-	 * @param p player
-	 * @param page page (starting from 0)
-	 * @param data data to be passed to the {@link #init} function.
-	 *
-	 * @throws IllegalCallerException If this method is called while {@link #pagination} is not set.
-	 */
-	public void openPaged(Player p, int page, Object[] data){
 
-
-		InventoryContents con = new InventoryContents(title,size, this.id);
-		Inventory inv = Bukkit.createInventory(con,size, ChatColor.translateAlternateColorCodes('&',con.getTitle()));
-		con.setInventory(inv);
-		currentPage = page;
-		init(p,con,data);
-		if(pagination == null){
-			throw new IllegalCallerException("Cannot open page with no-pagination GUI!");
-		}
-		con.putAll( pagination.getPage(page,size));
-		if(nextPageButton != null && pagination.hasNext(page)){
-			con.put(nextPageButtonSlot,nextPageButton);
-		}
-		if(previousPageButton != null && pagination.hasPrevious(page)){
-			con.put(previousPageButtonSlot,previousPageButton);
-		}
-		
-		for(Map.Entry<Integer, ClickableItem> en : con.entrySet()){
-			inv.setItem(en.getKey(),en.getValue().getItem());
-		}
-		p.openInventory(inv);
-	}
 
 	/**
 	 *
@@ -163,16 +183,18 @@ public abstract class TitanInv{
 	 * @param p
 	 * @param page
 	 */
-	protected void openPage(Player p, int page){
+	protected InventoryContents openPage(Player p, InventoryContents con, int page){
 
 
 		if(pagination == null){
 			throw new IllegalCallerException("Cannot open page with no-pagination GUI!");
 		}
-		InventoryContents con = new InventoryContents(title,size, this.id);
+		con.clear();
+		con.setPage(page);
+		//InventoryContents con = new InventoryContents(title,size, this.id, page);
+
 		Inventory inv = Bukkit.createInventory(con,size, ChatColor.translateAlternateColorCodes('&',con.getTitle()));
 		con.setInventory(inv);
-		currentPage = page;
 		con.putAll( pagination.getPage(page,size));
 		if(nextPageButton != null && pagination.hasNext(page)){
 			con.put(nextPageButtonSlot,nextPageButton);
@@ -185,6 +207,34 @@ public abstract class TitanInv{
 			inv.setItem(en.getKey(),en.getValue().getItem());
 		}
 		p.openInventory(inv);
+		return con;
+	}
+
+	/**
+	 *
+	 * Refreshes the inventory automatically calling the initialize function.
+	 *
+	 * <p>Has support for pagination, it refreshes the current page.
+	 *
+	 * @param p
+	 * @param con
+	 * @param data
+	 */
+	public void refresh(Player p, InventoryContents con,Object[] data){
+
+		con.clear();
+		init(p,con,data);
+		if(pagination != null){
+			con.putAll( pagination.getPage(con.getPage(),size));
+			if(nextPageButton != null && pagination.hasNext(con.getPage())){
+				con.put(nextPageButtonSlot,nextPageButton);
+			}
+			if(previousPageButton != null && pagination.hasPrevious(con.getPage())){
+				con.put(previousPageButtonSlot,previousPageButton);
+			}
+		}
+
+		update(p,con);
 	}
 	int nextPageButtonSlot;
 	ClickableItem nextPageButton;
@@ -201,13 +251,12 @@ public abstract class TitanInv{
 	 *
 	 * @param slot slot for the item to be placed in.
 	 * @param item item, the consumer of it will be overridden.
-	 * @param data data to be passed for {@link #openPaged} function.
 	 */
-	public void setNextPageButton(int slot, ClickableItem item, Object[] data){
+	public void setNextPageButton(int slot, ClickableItem item, InventoryContents con){
 
 		nextPageButtonSlot = slot;
 		(nextPageButton = item).setConsumer((e) -> {
-			openPage((Player) e.getWhoClicked(),currentPage+1);
+			openPage((Player) e.getWhoClicked(),con,con.getPage()+1);
 		});
 	}
 	/**
@@ -220,12 +269,11 @@ public abstract class TitanInv{
 	 *
 	 * @param slot slot for the item to be placed in.
 	 * @param item item, the consumer of it will be overridden.
-	 * @param data data to be passed for {@link #openPaged} function.
 	 */
-	public void setPreviousPageButton(int slot, ClickableItem item, Object[] data){
+	public void setPreviousPageButton(int slot, ClickableItem item, InventoryContents con){
 		previousPageButtonSlot = slot;
 		(previousPageButton = item).setConsumer((e) -> {
-			openPage((Player) e.getWhoClicked(),currentPage-1);
+			openPage((Player) e.getWhoClicked(),con,con.getPage()-1);
 		});
 	}
 
@@ -286,5 +334,9 @@ public abstract class TitanInv{
 	 */
 	public int getId() {
 		return id;
+	}
+
+	public Pagination getPagination() {
+		return pagination;
 	}
 }

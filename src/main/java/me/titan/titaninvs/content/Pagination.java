@@ -17,7 +17,7 @@ public class Pagination {
 	int itemsPerPage;
 
 	boolean boxed;
-	List<ClickableItem> items = new ArrayList<>();
+	List<ClickableItem> items;
 
 	Map<Integer, Map<Integer, ClickableItem>> cached = new HashMap<>();
 
@@ -31,6 +31,7 @@ public class Pagination {
 	public Pagination(int itemsPerPage, boolean isBoxed){
 		this.itemsPerPage = itemsPerPage;
 		this.boxed = isBoxed;
+		itemsOfList(null);
 	}
 
 	/**
@@ -39,10 +40,10 @@ public class Pagination {
 	 * Important method.
 	 *
 	 * @param items
-	 * @return itself
+	 * @return self
 	 */
 	public Pagination setItems(List<ClickableItem> items) {
-		this.items = items;
+		itemsOfList(items);
 		return this;
 	}
 
@@ -118,5 +119,32 @@ public class Pagination {
 		cached.put(page,map);
 
 		return map;
+	}
+	private void itemsOfList(List<ClickableItem> list){
+		items = new ArrayList<>() {
+			@Override
+			public ClickableItem set(int index, ClickableItem element) {
+				cached.clear();
+				return super.set(index, element);
+			}
+
+			@Override
+			public boolean add(ClickableItem clickableItem) {
+				cached.clear();
+				return super.add(clickableItem);
+			}
+
+			@Override
+			public void add(int index, ClickableItem element) {
+				cached.clear();
+				super.add(index, element);
+			}
+		};
+		if(list != null){
+			items.addAll(list);
+		}
+	}
+	public void clearCached(){
+		cached.clear();
 	}
 }

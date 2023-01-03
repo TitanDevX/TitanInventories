@@ -1,15 +1,16 @@
 package me.titan.titaninvs.invs;
 
 import me.titan.titaninvs.content.InventoryContents;
+import me.titan.titaninvs.content.InventoryContext;
 import me.titan.titaninvs.core.TitanInvAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.Map;
 
 /**
  *
@@ -18,7 +19,6 @@ import java.util.Set;
  */
 public abstract class UpdatingInv extends TitanInv {
 
-	private final Set<Player> viewers = new HashSet<>();
 
 	private long delay;
 
@@ -26,35 +26,18 @@ public abstract class UpdatingInv extends TitanInv {
 
 	boolean updating;
 
-	Object[] data;
-	InventoryContents contents;
+
+	Map<String, InventoryContext> contextMap = new HashMap<>();
+
 
 	public UpdatingInv(String title, int size, long delay) {
 		super(title, size);
 		this.delay = delay;
 
-		(task = new BukkitRunnable() {
-			@Override
-			public void run() {
-				Iterator<Player> it = viewers.iterator();
-				while(it.hasNext()){
-					Player p = it.next();
-					if(p.isOnline()){
-						update(p);
-					}else{
-						it.remove();
-					}
-				}
-			}
-		}).runTaskTimer(TitanInvAPI.getPlugin(),delay,delay);
-	}
-
-	@Override
-	public void init(Player p, InventoryContents con, Object[] data) {
-		this.data = data;
-		this.contents = con;
 
 	}
+
+
 
 
 
@@ -62,40 +45,86 @@ public abstract class UpdatingInv extends TitanInv {
 	 *
 	 * Updates items in the given {@link InventoryContents}
 	 *
-	 * @param p player
-	 * @param con contents to be updated.
+	 * @param player player
+	 * @param inventoryContext context to be updates.
 	 */
-	public abstract void updateItems(Player p, InventoryContents con, Object[] data);
+	public abstract void updateItems(Player player, InventoryContext inventoryContext);
 
 
-	@Override
-	public void onOpen(InventoryOpenEvent e) {
-
-		getViewers().add((Player) e.getPlayer());
-		if(task.isCancelled()){
-			task.runTaskTimer(TitanInvAPI.getPlugin(),delay,delay);
-		}
-
-	}
-
-	@Override
-	public void onClose(InventoryCloseEvent e) {
-		if(closeable()){
-			getViewers().remove((Player) e.getPlayer());
-			if(getViewers().isEmpty()){
-				task.cancel();
-			}
-		}else{
-			e.getPlayer().openInventory(e.getInventory());
-		}
-
-
-	}
 
 	public boolean closeable(){
 		return true;
 	}
 
+	@Override
+	public InventoryContents open(Player p, int page, Object[] data) {
+		InventoryContents inv = super.open(p,page, data);
+		InventoryContext cont = new InventoryContext(inv,data);
+		contextMap.put(p.getName(),cont);
+		if(task == null){
+			runTask();
+		}
+		return inv;
+	}
+
+	@Override
+	protected InventoryContents openPage(Player p, InventoryContents con, int page) {
+		super.openPage(p,con, page);
+		contextMap.get(p.getName()).setContents(con);
+		return con;
+	}
+
+	private void runTask(){
+		(task = new BukkitRunnable() {
+			@Override
+			public void run() {
+				Iterator<Map.Entry<String, InventoryContext>> it = contextMap.entrySet().iterator();
+				while(it.hasNext()){
+					Map.Entry<String, InventoryContext> en = it.next();
+					Player p = Bukkit.getPlayer(en.getKey());
+					if(p != null && p.isOnline() && p.getOpenInventory().getTopInventory().getHolder() != null && p.getOpenInventory().getTopInventory().getHolder().equals(en.getValue().getContents())){
+						update(p, en.getValue());
+					}else{
+						it.remove();
+					}
+				}
+				if(contextMap.isEmpty()){
+					task.cancel();
+					task = null;
+				}
+
+			}
+		}).runTaskTimer(TitanInvAPI.getPlugin(),delay,delay);
+	}
+
+	@Override
+	public void onClose(InventoryCloseEvent e) {
+
+		if(contextMap.containsKey(e.getPlayer().getName())){
+			if(getPagination() != null ){
+				return;
+			}
+			contextMap.remove(e.getPlayer().getName());
+			if(contextMap.isEmpty() && task != null){
+				task.cancel();
+				task = null;
+			}
+		}
+
+	}
+
+	protected void setPageItems(InventoryContents con){
+
+		if(pagination == null) return;
+		con.putAll( pagination.getPage(con.getPage(),size));
+		if(nextPageButton != null && pagination.hasNext(con.getPage())){
+			con.put(nextPageButtonSlot,nextPageButton);
+		}
+		if(previousPageButton != null && pagination.hasPrevious(con.getPage())){
+			con.put(previousPageButtonSlot,previousPageButton);
+		}
+
+	}
 	/**
 	 *
 	 * Updates the inventory contents and displays it.
@@ -106,21 +135,21 @@ public abstract class UpdatingInv extends TitanInv {
 	 *
 	 * @param p
 	 */
-	public void update(Player p) {
-		updateItems(p,this.contents,data);
-		super.update(p, contents);
-	}
-	public UpdatingInv setData(Object[] data){
-		this.data = data;
-		return this;
+	private void update(Player p, InventoryContext con) {
+		updateItems(p,con);
+		super.update(p, con.getContents());
 	}
 
 	/**
+	 * Return a modifiable context for the given player
+	 * A context holds modifiable inventory contents and data.
+	 * However {@link #TitanInv#update(Player, InventoryContents)}
+	 * has to be called for changes to inventory content to apply.
 	 *
-	 *
-	 * @return current viewers of the inventory.
+	 * @param p
+	 * @return
 	 */
-	public Set<Player> getViewers() {
-		return viewers;
+	public InventoryContext getContext(Player p) {
+		return contextMap.get(p.getName());
 	}
 }

@@ -14,6 +14,8 @@ public class InventoryContents extends HashMap<Integer, ClickableItem> implement
 	String title;
 	final int size;
 	final int titanInv;
+	int page = 0;
+	private boolean titleChanged;
 
 
 	public InventoryContents(String title, int size, int titanInv) {
@@ -21,7 +23,12 @@ public class InventoryContents extends HashMap<Integer, ClickableItem> implement
 		this.size = size;
 		this.titanInv = titanInv;
 	}
-
+	public InventoryContents(String title, int size, int titanInv, int page) {
+		this.title = title;
+		this.size = size;
+		this.titanInv = titanInv;
+		this.page = page;
+	}
 	public void setInventory(Inventory inventory) {
 		this.inventory = inventory;
 	}
@@ -79,6 +86,9 @@ public class InventoryContents extends HashMap<Integer, ClickableItem> implement
 	}
 
 	public void setTitle(String title) {
+		if(!title.equals(this.title)){
+			titleChanged = true;
+		}
 		this.title = title;
 	}
 
@@ -89,5 +99,21 @@ public class InventoryContents extends HashMap<Integer, ClickableItem> implement
 	@Override
 	public Inventory getInventory() {
 		return inventory;
+	}
+
+	public int getPage() {
+		return page;
+	}
+
+	public void setPage(int page) {
+		this.page = page;
+	}
+
+	public boolean isTitleChanged() {
+		return titleChanged;
+	}
+
+	public void resetTitleChanged() {
+		this.titleChanged = false;
 	}
 }

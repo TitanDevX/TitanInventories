@@ -32,9 +32,9 @@ public class UsersGUI extends TitanInv {
 	}
 	public static void open(Player p, Collection<User> users){
 		if(instance == null){
-			(instance = new UsersGUI()).openPaged(p,0, new Object[]{users});
+			(instance = new UsersGUI()).open(p,0, new Object[]{users});
 		}else{
-			instance.openPaged(p,0, new Object[]{users});
+			instance.open(p,0, new Object[]{users});
 		}
 	}
 
@@ -43,14 +43,25 @@ public class UsersGUI extends TitanInv {
 		if(data.length == 0) return;
 		Collection<User> users = (Collection<User>) data[0];
 		List<ClickableItem> items = new ArrayList<>();
+
 		for(User u : users){
 			items.add(ClickableItem.of(ItemBuilder.create(Material.GOLD_BLOCK).name("&a" + u.getName()).lore("","&aLast name: " + u.getLastName()) , (e) -> {
 				e.getWhoClicked().sendMessage("This is an action u clicked user " + u.getName());
 			}));
 		}
 		pagination(new Pagination(7,true).setItems(items));
-		setNextPageButton(26,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cNext page").getItemStack()), data);
-	 	setPreviousPageButton(18,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()), data);
+		setNextPageButton(26,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cNext page").getItemStack()), con);
+	 	setPreviousPageButton(18,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()), con);
+
+
+//		Bukkit.getScheduler().runTaskLater(TitanInvAPI.getPlugin(),() -> {
+//			List<User> u = new ArrayList<>();
+//			for(int i =0;i<users.size();i++){
+//				u.add(new User("2_User" + i,"2_lastName" + i));
+//			}
+//			data[0] = u;
+//			refresh(p,con,data);
+//		},20 * 5);
 	}
 
 	@Override
