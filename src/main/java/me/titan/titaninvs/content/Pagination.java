@@ -109,12 +109,11 @@ public class Pagination {
 			ClickableItem item = items.get(i);
 
 
-			if(isBoxed()){
-				if(slot % 9 == 0 || slot % 9 == 8 || slot>(invSize-10)){
-					continue;
-				}
+			if(!isBoxed() || (slot % 9 != 0 && slot % 9 != 8 && slot<=(invSize-10))){
+				map.put(slot,item);
 			}
-			map.put(slot++,item);
+			slot++;
+
 		}
 		cached.put(page,map);
 
