@@ -189,7 +189,6 @@ public abstract class TitanInv{
 		if(pagination == null){
 			throw new IllegalCallerException("Cannot open page with no-pagination GUI!");
 		}
-		con.clear();
 		con.setPage(page);
 		//InventoryContents con = new InventoryContents(title,size, this.id, page);
 
@@ -198,9 +197,13 @@ public abstract class TitanInv{
 		con.putAll( pagination.getPage(page,size));
 		if(nextPageButton != null && pagination.hasNext(page)){
 			con.put(nextPageButtonSlot,nextPageButton);
+		}else if(nextPageButton != null){
+			con.remove(nextPageButtonSlot);
 		}
 		if(previousPageButton != null && pagination.hasPrevious(page)){
 			con.put(previousPageButtonSlot,previousPageButton);
+		}else if(previousPageButton != null){
+			con.remove(previousPageButtonSlot);
 		}
 
 		for(Map.Entry<Integer, ClickableItem> en : con.entrySet()){
