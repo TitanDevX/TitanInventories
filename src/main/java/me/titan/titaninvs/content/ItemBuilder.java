@@ -96,18 +96,18 @@ public class ItemBuilder {
 
 	}
 	public ItemBuilder flag(ItemFlag flag){
-
-
-		getItemMeta().addItemFlags(flag);
-
+		ItemMeta meta = getItemMeta();
+		meta.addItemFlags(flag);
+		itemMeta(meta);
 		return this;
 
 	}
 	public ItemBuilder flags(List<ItemFlag> flags){
-
+		ItemMeta meta = getItemMeta();
 		for(ItemFlag f : flags){
-			getItemMeta().addItemFlags(f);
+			meta.addItemFlags(f);
 		}
+		itemMeta(meta);
 		return this;
 
 	}
