@@ -95,6 +95,13 @@ public class ItemBuilder {
 		return this;
 
 	}
+	public ItemBuilder enchant(Enchantment ench, int level){
+
+		current.addUnsafeEnchantment(ench,level);
+
+		return this;
+
+	}
 	public ItemBuilder flag(ItemFlag flag){
 		ItemMeta meta = getItemMeta();
 		meta.addItemFlags(flag);
