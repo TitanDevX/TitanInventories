@@ -1,6 +1,6 @@
 package me.titan.titaninvs.core;
 
-import me.titan.titaninvs.listeners.TitanInventoryListener;
+import me.titan.titaninvs.listener.TitanInventoryListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,6 +19,8 @@ public class TitanInvAPI {
 	private static JavaPlugin plugin;
 	public static void init(JavaPlugin plugin){
 		Bukkit.getPluginManager().registerEvents(new TitanInventoryListener(),plugin);
+		Bukkit.getPluginManager().registerEvents(new TitanInventoryListener(),plugin);
+
 		TitanInvAPI.plugin = plugin;
 
 	}

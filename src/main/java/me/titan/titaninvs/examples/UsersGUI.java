@@ -1,7 +1,7 @@
 package me.titan.titaninvs.examples;
 
+
 import me.titan.titaninvs.content.ClickableItem;
-import me.titan.titaninvs.content.InventoryContents;
 import me.titan.titaninvs.content.ItemBuilder;
 import me.titan.titaninvs.content.Pagination;
 import me.titan.titaninvs.invs.TitanInv;
@@ -25,23 +25,19 @@ import java.util.List;
  */
 public class UsersGUI extends TitanInv {
 
-	private static TitanInv instance;
 
-	public UsersGUI() {
+	Collection<User> users;
+	public UsersGUI(Collection<User> users) {
 		super("Test", 27);
+		this.users = users;
 	}
 	public static void open(Player p, Collection<User> users){
-		if(instance == null){
-			(instance = new UsersGUI()).open(p,0, new Object[]{users});
-		}else{
-			instance.open(p,0, new Object[]{users});
-		}
+		new UsersGUI(users).open(p,0);
 	}
 
+
 	@Override
-	public void init(Player p, InventoryContents con, Object[] data) {
-		if(data.length == 0) return;
-		Collection<User> users = (Collection<User>) data[0];
+	public void init(Player p) {
 		List<ClickableItem> items = new ArrayList<>();
 
 		for(User u : users){
@@ -50,8 +46,8 @@ public class UsersGUI extends TitanInv {
 			}));
 		}
 		pagination(new Pagination(7,true).setItems(items));
-		setNextPageButton(26,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cNext page").getItemStack()), con);
-	 	setPreviousPageButton(18,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()), con);
+		setNextPageButton(26,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cNext page").getItemStack()));
+	 	setPreviousPageButton(18,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()));
 
 
 //		Bukkit.getScheduler().runTaskLater(TitanInvAPI.getPlugin(),() -> {
@@ -65,7 +61,7 @@ public class UsersGUI extends TitanInv {
 	}
 
 	@Override
-	protected boolean shouldCacheInventory() {
+	public boolean isCached() {
 		return false;
 	}
 }

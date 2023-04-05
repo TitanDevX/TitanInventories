@@ -17,9 +17,9 @@ public class Pagination {
 	int itemsPerPage;
 
 	boolean boxed;
-	List<ClickableItem> items;
+	List<ClickableItem> items= new ArrayList<>();
 
-	Map<Integer, Map<Integer, ClickableItem>> cached = new HashMap<>();
+	Map<Integer, Map<Integer,ClickableItem>> cached = new HashMap<>();
 
 	/**
 	 *
@@ -39,7 +39,6 @@ public class Pagination {
 	 * Set all items, to be sorted into pages.
 	 * Important method.
 	 *
-	 * @param items
 	 * @return self
 	 */
 	public Pagination setItems(List<ClickableItem> items) {
@@ -53,7 +52,7 @@ public class Pagination {
 
 	/**
 	 * Get pages amount.
-	 * @return
+	 * @return number of pages of the gui's pagination
 	 */
 	public int getPages() {
 		if(getItems().size() % itemsPerPage != 0){
@@ -69,16 +68,16 @@ public class Pagination {
 
 	/**
 	 * Is there a page after the given page?
-	 * @param page
-	 * @return
+	 * @param page the number of the current page
+	 * @return if there is a page after the given page
 	 */
 	public boolean hasNext(int page){
 		return getPages()-1>page;
 	}
 	/**
 	 * Is there a page before the given page?
-	 * @param page
-	 * @return
+	 * @param page the current page number
+	 * @return if there is a page before the current page
 	 */
 	public boolean hasPrevious(int page){
 		return getPages() > 1 && page > 0;
@@ -86,7 +85,7 @@ public class Pagination {
 
 	/**
 	 *
-	 * @param page
+	 * @param page the page to get items of
 	 * @param invSize gui size
 	 * @return content in a page.
 	 */
@@ -105,16 +104,13 @@ public class Pagination {
 		int to = Math.min(items.size(),(page+1)*itemsPerPage);
 		int slot = isBoxed() ? 10 : 0;
 		for(int i =from;i<to;i++){
-
 			ClickableItem item = items.get(i);
-
-
 			if(!isBoxed() || (slot % 9 != 0 && slot % 9 != 8 && slot<=(invSize-10))){
 				map.put(slot,item);
 			}
 			slot++;
-
 		}
+
 		cached.put(page,map);
 
 		return map;
@@ -142,8 +138,5 @@ public class Pagination {
 		if(list != null){
 			items.addAll(list);
 		}
-	}
-	public void clearCached(){
-		cached.clear();
 	}
 }

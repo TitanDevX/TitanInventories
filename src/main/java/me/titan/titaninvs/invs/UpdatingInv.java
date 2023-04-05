@@ -1,54 +1,52 @@
 package me.titan.titaninvs.invs;
 
-import me.titan.titaninvs.content.InventoryContents;
-import me.titan.titaninvs.content.InventoryContext;
 import me.titan.titaninvs.core.TitanInvAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
- * A GUI that auto updates every {@link #delay}
+ * A GUI that auto updates every {@link #globalDelay}
  *
  */
 public abstract class UpdatingInv extends TitanInv {
 
 
+
+	private static BukkitRunnable globalTask;
+
+	private final static Map<String, UpdatingInv> updatingInvs = new HashMap<>();
+	private static long globalDelay = 20;
+
 	private long delay;
+	private BukkitRunnable task;
 
-	BukkitRunnable task;
-
-	boolean updating;
-
-
-	Map<String, InventoryContext> contextMap = new HashMap<>();
-
-
+	private final List<String> viewers = new ArrayList<>();
+	public UpdatingInv(String title, int size) {
+		super(title, size);
+	}
 	public UpdatingInv(String title, int size, long delay) {
 		super(title, size);
 		this.delay = delay;
-
-
 	}
-
-
-
-
-
+	public static void setStaticDelay(long de){
+		globalDelay = de;
+	}
+	public boolean isStaticDelay(){
+		return true;
+	}
 	/**
 	 *
-	 * Updates items in the given {@link InventoryContents}
 	 *
 	 * @param player player
-	 * @param inventoryContext context to be updates.
 	 */
-	public abstract void updateItems(Player player, InventoryContext inventoryContext);
+	public abstract void updateItems(Player player);
 
 
 
@@ -57,73 +55,103 @@ public abstract class UpdatingInv extends TitanInv {
 	}
 
 	@Override
-	public InventoryContents open(Player p, int page, Object[] data) {
-		InventoryContents inv = super.open(p,page, data);
-		InventoryContext cont = new InventoryContext(inv,data);
-		contextMap.put(p.getName(),cont);
-		if(task == null){
+	public Inventory open(Player p, int page) {
+		Inventory inv  = super.open(p,page);
+		//InventoryContext cont = new InventoryContext(inv,data);
+		if(!isStaticDelay()){
 			runTask();
+			return inv;
+		}
+		updatingInvs.put(p.getName(),this);
+		if(globalTask == null){
+			runGlobalTask();
 		}
 		return inv;
 	}
 
-	@Override
-	protected InventoryContents openPage(Player p, InventoryContents con, int page) {
-		super.openPage(p,con, page);
-		contextMap.get(p.getName()).setContents(con);
-		return con;
-	}
+
 
 	private void runTask(){
 		(task = new BukkitRunnable() {
 			@Override
 			public void run() {
-				Iterator<Map.Entry<String, InventoryContext>> it = contextMap.entrySet().iterator();
-				while(it.hasNext()){
-					Map.Entry<String, InventoryContext> en = it.next();
-					Player p = Bukkit.getPlayer(en.getKey());
-					if(p != null && p.isOnline() && p.getOpenInventory().getTopInventory().getHolder() != null && p.getOpenInventory().getTopInventory().getHolder().equals(en.getValue().getContents())){
-						update(p, en.getValue());
+				if(viewers.isEmpty()){
+					cancel();
+					task = null;
+					return;
+				}
+
+				for (Iterator<String> it = viewers.iterator(); it.hasNext(); ) {
+					String v =  it.next();
+					Player p = Bukkit.getPlayer(v);
+					if(p != null && p.isOnline() && p.getOpenInventory().getTopInventory().getHolder() != null && p.getOpenInventory().getTopInventory().getHolder().equals(UpdatingInv.this)){
+						tick(p);
 					}else{
 						it.remove();
 					}
 				}
-				if(contextMap.isEmpty()){
-					task.cancel();
-					task = null;
+
+			}
+		}).runTaskTimer(TitanInvAPI.getPlugin(), delay,delay);
+	}
+	private static void runGlobalTask(){
+		(globalTask = new BukkitRunnable() {
+			@Override
+			public void run() {
+				Iterator<Map.Entry<String, UpdatingInv>> it = updatingInvs.entrySet().iterator();
+				while(it.hasNext()){
+					Map.Entry<String, UpdatingInv> en = it.next();
+					Player p = Bukkit.getPlayer(en.getKey());
+					if(p != null && p.isOnline() && p.getOpenInventory().getTopInventory().getHolder() != null && p.getOpenInventory().getTopInventory().getHolder().equals(en.getValue())){
+						en.getValue().tick(p);
+					}else{
+						it.remove();
+					}
+				}
+				if(updatingInvs.isEmpty()){
+					globalTask.cancel();
+					globalTask = null;
 				}
 
 			}
-		}).runTaskTimer(TitanInvAPI.getPlugin(),delay,delay);
+		}).runTaskTimer(TitanInvAPI.getPlugin(),globalDelay,globalDelay);
+	}
+
+	@Override
+	public void onOpen(InventoryOpenEvent e) {
+		viewers.add(e.getPlayer().getName());
 	}
 
 	@Override
 	public void onClose(InventoryCloseEvent e) {
-
-		if(contextMap.containsKey(e.getPlayer().getName())){
-			if(getPagination() != null ){
+		if(!closeable() && !closed){
+			e.getPlayer().openInventory(getInventory());
+			return;
+		}
+		if(updatingInvs.containsKey(e.getPlayer().getName())){
+			if(pagination != null ){
 				return;
 			}
-			contextMap.remove(e.getPlayer().getName());
-			if(contextMap.isEmpty() && task != null){
-				task.cancel();
-				task = null;
+			updatingInvs.remove(e.getPlayer().getName());
+			if(updatingInvs.isEmpty() && globalTask != null){
+				globalTask.cancel();
+				globalTask = null;
 			}
 		}
+		viewers.remove(e.getPlayer().getName());
 
 	}
 
-	protected void setPageItems(InventoryContents con){
+	protected void setPageItems(){
 
 		if(pagination == null) return;
-		con.putAll( pagination.getPage(con.getPage(),size));
-		if(nextPageButton != null && pagination.hasNext(con.getPage())){
-			con.put(nextPageButtonSlot,nextPageButton);
+		putAll( pagination.getPage(getCurrentPage(),size));
+		if(nextPageButton != null && pagination.hasNext(getCurrentPage())){
+			put(nextPageButtonSlot,nextPageButton);
 		}
-		if(previousPageButton != null && pagination.hasPrevious(con.getPage())){
-			con.put(previousPageButtonSlot,previousPageButton);
+		if(previousPageButton != null && pagination.hasPrevious(getCurrentPage())){
+			put(previousPageButtonSlot,previousPageButton);
 		}
-
 	}
 	/**
 	 *
@@ -133,23 +161,27 @@ public abstract class UpdatingInv extends TitanInv {
 	 *     Note: this is automatically called normally.
 	 * </p>
 	 *
-	 * @param p
+	 * @param p the player
 	 */
-	private void update(Player p, InventoryContext con) {
-		updateItems(p,con);
-		super.update(p, con.getContents());
+	private void tick(Player p) {
+
+		updateItems(p);
+		super.update(p);
 	}
 
+	boolean closed = false;
+
 	/**
-	 * Return a modifiable context for the given player
-	 * A context holds modifiable inventory contents and data.
-	 * However {@link #TitanInv#update(Player, InventoryContents)}
-	 * has to be called for changes to inventory content to apply.
-	 *
-	 * @param p
-	 * @return
+	 * Closes the inventory for this player ,use this method for none-closeable guis.
+	 * @param p the player
 	 */
-	public InventoryContext getContext(Player p) {
-		return contextMap.get(p.getName());
+	public void close(Player p){
+		closed = true;
+		p.closeInventory();
+	}
+	public void stop(){
+		if(task != null){
+			task.cancel();
+		}
 	}
 }
