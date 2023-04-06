@@ -134,6 +134,7 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
         } else if (previousPageButton != null) {
             remove(previousPageButtonSlot);
         }
+        initPage(p,page);
 
         for (Map.Entry<Integer, ClickableItem> en : entrySet()) {
             inventory.setItem(en.getKey(), en.getValue().getItem());
@@ -141,6 +142,7 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
         p.openInventory(inventory);
         return inventory;
     }
+    public void initPage(Player p, int page){}
 
     public abstract void init(Player p);
 
