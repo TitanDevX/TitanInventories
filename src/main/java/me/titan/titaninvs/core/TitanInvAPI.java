@@ -19,7 +19,6 @@ public class TitanInvAPI {
 	private static JavaPlugin plugin;
 	public static void init(JavaPlugin plugin){
 		Bukkit.getPluginManager().registerEvents(new TitanInventoryListener(),plugin);
-		Bukkit.getPluginManager().registerEvents(new TitanInventoryListener(),plugin);
 
 		TitanInvAPI.plugin = plugin;
 
