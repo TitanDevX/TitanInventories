@@ -52,7 +52,7 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
                 put(previousPageButtonSlot, previousPageButton);
             }
         }
-        inventory = Bukkit.createInventory(this, size, ChatColor.translateAlternateColorCodes('&', title));
+        inventory = Bukkit.createInventory(this, size, ChatColor.translateAlternateColorCodes('&', getTitle()));
 
 
         for (Map.Entry<Integer, ClickableItem> en : entrySet()) {
@@ -76,7 +76,7 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
         inventory = getInventory();
         if (isTitleChanged) {
             inventory = Bukkit.createInventory(this, size,
-                    ChatColor.translateAlternateColorCodes('&', title));
+                    ChatColor.translateAlternateColorCodes('&', getTitle()));
         } else {
             inventory.clear();
         }
@@ -121,7 +121,7 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
         }
         currentPage = page;
 
-        inventory = Bukkit.createInventory(this, size, ChatColor.translateAlternateColorCodes('&', title));
+        inventory = Bukkit.createInventory(this, size, ChatColor.translateAlternateColorCodes('&', getTitle()));
 
         putAll(pagination.getPage(page, size));
         if (nextPageButton != null && pagination.hasNext(page)) {
@@ -283,4 +283,5 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
     public boolean isProtected(){
         return true;
     }
+
 }
