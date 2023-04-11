@@ -31,18 +31,21 @@ public class ChestInvExample extends TitanChestInv
     }
 
     @Override
-    public void onItemAdd(int slot, ItemStack item, Player p, int amount) {
+    public boolean onItemAdd(int slot, ItemStack item, Player p, int amount) {
         items.put(slot, item.clone());
+        return true;
     }
 
     @Override
-    public void onItemRemove(int slot, ItemStack item, Player p, int amount) {
+    public boolean onItemRemove(int slot, ItemStack item, Player p, int amount) {
         if(items.containsKey(slot)){
             if(amount == item.getAmount()){
                 items.remove(slot);
             }else{
                 items.put(slot,item);
             }
+
         }
+        return true;
     }
 }

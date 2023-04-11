@@ -64,6 +64,27 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
 
 
     }
+    public void refresh(Player p){
+        if(inventory == null){
+            open(p,currentPage);
+            return;
+        }
+
+        clear();
+        init(p);
+        if (pagination != null) {
+            putAll(pagination.getPage(currentPage, size));
+            if (nextPageButton != null && pagination.hasNext(currentPage)) {
+                put(nextPageButtonSlot, nextPageButton);
+            }
+            if (previousPageButton != null && pagination.hasPrevious(currentPage)) {
+                put(previousPageButtonSlot, previousPageButton);
+            }
+        }
+        for (Map.Entry<Integer, ClickableItem> en : entrySet()) {
+            inventory.setItem(en.getKey(), en.getValue().getItem());
+        }
+    }
 
     /**
      * Updates the inventory.

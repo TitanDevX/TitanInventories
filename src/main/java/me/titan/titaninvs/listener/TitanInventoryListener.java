@@ -54,9 +54,9 @@ public class TitanInventoryListener implements Listener {
 				if(amount != 0)
 					c.onItemRemove(e.getSlot(),e.getCurrentItem(),p,amount);
 				if(e.getAction() == InventoryAction.SWAP_WITH_CURSOR){
-					c.onItemRemove(e.getSlot(),e.getCurrentItem(),p,e.getCurrentItem().getAmount());
+					e.setCancelled(c.onItemRemove(e.getSlot(),e.getCurrentItem(),p,e.getCurrentItem().getAmount()));
 					if(e.getCursor() != null)
-						c.onItemAdd(e.getSlot(),e.getCursor(),p,e.getCursor().getAmount());
+						e.setCancelled(c.onItemAdd(e.getSlot(),e.getCursor(),p,e.getCursor().getAmount()));
 				}
 			}else if(e.getCursor() != null){
 
@@ -67,7 +67,7 @@ public class TitanInventoryListener implements Listener {
 					amount = 1;
 				}
 				if(amount != 0){
-					c.onItemAdd(e.getSlot(),e.getCursor(),p,amount);
+					e.setCancelled(c.onItemAdd(e.getSlot(),e.getCursor(),p,amount));
 				}
 			}
 

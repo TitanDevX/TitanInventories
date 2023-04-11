@@ -9,8 +9,8 @@ public abstract class TitanChestInv extends TitanInv{
     }
 
 
-    public void onItemAdd(int slot, ItemStack item,Player p, int amount){}
-    public void onItemRemove(int slot, ItemStack item,Player p, int amount){}
+    public boolean onItemAdd(int slot, ItemStack item,Player p, int amount){return true;}
+    public boolean onItemRemove(int slot, ItemStack item,Player p, int amount){return true;}
 
     @Override
     public boolean isProtected() {
