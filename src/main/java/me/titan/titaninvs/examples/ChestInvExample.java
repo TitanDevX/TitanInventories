@@ -33,7 +33,7 @@ public class ChestInvExample extends TitanChestInv
     @Override
     public boolean onItemAdd(int slot, ItemStack item, Player p, int amount) {
         items.put(slot, item.clone());
-        return true;
+        return false;
     }
 
     @Override
@@ -46,6 +46,6 @@ public class ChestInvExample extends TitanChestInv
             }
 
         }
-        return true;
+        return false;
     }
 }
