@@ -232,11 +232,19 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
      * @param item
      */
     public void fill(ClickableItem item) {
+       fill(item,true);
+    }
+    /**
+     * Fills content with the item.
+     *
+     * @param item
+     */
+    public void fill(ClickableItem item, boolean override) {
         for (int i = 0; i < size; i++) {
-            put(i, item);
+            if(!override || get(i) == null)
+                put(i, item);
         }
     }
-
     /**
      * Fill a specific column
      *
@@ -244,32 +252,44 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
      * @param item
      */
     public void fillColumn(int column, ClickableItem item) {
-
-        // 54 - (9-1)
+        fillColumn(column,item,true);
+    }
+    /**
+     * Fill a specific column
+     *
+     * @param column
+     * @param item
+     */
+    public void fillColumn(int column, ClickableItem item,boolean override) {
 
         for (int i = column; i <= size - (9 - (column)); i += 9) {
-
-            put(i, item);
+            if(!override || get(i) == null)
+                put(i, item);
 
         }
-
     }
-
     public void fillRow(int row, ClickableItem item) {
+        fillRow(row,item,true);
+    }
+    public void fillRow(int row, ClickableItem item, boolean override) {
 
         // 54 - (9-1)
 
         for (int i = row * 9; i < (row * 9) + 9; i++) {
-            put(i, item);
+            if(!override || get(i) == null)
+             put(i, item);
         }
 
     }
 
     public void fillBorders(ClickableItem item) {
-        fillRow(0, item);
-        fillColumn(0, item);
-        fillRow((size / 9) - 1, item);
-        fillColumn(8, item);
+       fillBorders(item,true);
+    }
+    public void fillBorders(ClickableItem item,boolean override) {
+        fillRow(0, item,override);
+        fillColumn(0, item,override);
+        fillRow((size / 9) - 1, item,override);
+        fillColumn(8, item,override);
     }
 
     public void setTitle(String title) {
