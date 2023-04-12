@@ -103,10 +103,12 @@ public class Pagination {
 		}
 		int to = Math.min(items.size(),(page+1)*itemsPerPage);
 		int slot = isBoxed() ? 10 : 0;
-		for(int i =from;i<to;i++){
+		int i = from;
+		while(i<to){
 			ClickableItem item = items.get(i);
 			if(!isBoxed() || (slot % 9 != 0 && slot % 9 != 8 && slot<=(invSize-10))){
 				map.put(slot,item);
+				i++;
 			}
 			slot++;
 		}
