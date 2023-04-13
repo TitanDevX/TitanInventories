@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  *
@@ -22,6 +23,7 @@ import java.util.Map;
 public class ItemBuilder {
 
 	ItemStack current;
+	private static Function<String, String> colorizer;
 
 	public ItemBuilder(ItemStack current) {
 		this.current = current.clone();
@@ -175,8 +177,14 @@ public class ItemBuilder {
 		m.setLore(colorize(Arrays.asList(lores)));
 		return itemMeta(m);
 	}
+	public static void colorizer(Function<String, String> col){
+		colorizer = col;
+	}
 	public static String colorize(String msg){
 		if(msg == null) return "";
+		if(colorizer != null){
+			return colorizer.apply(msg);
+		}
 		return ChatColor.translateAlternateColorCodes('&',msg);
 	}
 	public static List<String> colorize(List<String> msgs){
