@@ -9,6 +9,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  *
@@ -48,6 +49,9 @@ public abstract class UpdatingInv extends TitanInv {
 	 */
 	public abstract void updateItems(Player player);
 
+	public CompletableFuture<Void> loadItemsAsync(Player player){
+		return CompletableFuture.failedFuture(new UnsupportedOperationException());
+	}
 
 
 	public boolean closeable(){
@@ -165,8 +169,18 @@ public abstract class UpdatingInv extends TitanInv {
 	 */
 	private void tick(Player p) {
 
-		updateItems(p);
-		super.update(p);
+		loadItemsAsync(p).whenComplete((v,th) -> {
+
+			if(th instanceof UnsupportedOperationException){
+				updateItems(p);
+				super.update(p);
+			}else{
+				Bukkit.getScheduler().runTask(TitanInvAPI.getPlugin(),() -> {
+					updateItems(p);
+					super.update(p);
+				});
+			}
+		});
 	}
 
 	boolean closed = false;
