@@ -1,7 +1,7 @@
 package me.titan.titaninvs.examples;
 
 import me.titan.titaninvs.content.ClickableItem;
-import me.titan.titaninvs.content.ItemBuilder;
+import me.titan.titaninvs.content.SampleItemBuilder;
 import me.titan.titaninvs.invs.UpdatingInv;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -25,14 +25,14 @@ public class RewardWiningGUI extends UpdatingInv {
             for (int y = 0; y < 3; y++) {
 
                 int slot = x+(y*9);
-                put(slot, ClickableItem.empty(ItemBuilder.create(Material.PINK_STAINED_GLASS_PANE).getItemStack()));
+                put(slot, ClickableItem.empty(SampleItemBuilder.create(Material.PINK_STAINED_GLASS_PANE).getItemStack()));
             }
         }
         for (int x = 5; x < 9; x++) {
             for (int y = 0; y < 3; y++) {
                 int slot = x+(y*9);
 
-                put(slot, ClickableItem.empty(ItemBuilder.create(Material.PINK_STAINED_GLASS_PANE).getItemStack()));
+                put(slot, ClickableItem.empty(SampleItemBuilder.create(Material.PINK_STAINED_GLASS_PANE).getItemStack()));
             }
         }
         int s = 4;
@@ -65,20 +65,20 @@ public class RewardWiningGUI extends UpdatingInv {
         for (int x = 0; x < 4; x++) {
             for (int y = 0; y < 3; y++) {
                 int slot = x+(y*9);
-                put(slot, ClickableItem.empty(ItemBuilder.create(mat).getItemStack()));
+                put(slot, ClickableItem.empty(SampleItemBuilder.create(mat).getItemStack()));
             }
         }
 
         for (int x = 5; x < 9; x++) {
             for (int y = 0; y < 3; y++) {
                 int slot = x+(y*9);
-                put(slot, ClickableItem.empty(ItemBuilder.create(mat).getItemStack()));
+                put(slot, ClickableItem.empty(SampleItemBuilder.create(mat).getItemStack()));
             }
         }
 
         for(int i = 4;i<=22;i+=9){
             if(i != rewardSlot){
-                put(i,ClickableItem.empty(ItemBuilder.create(mat).getItemStack()));
+                put(i,ClickableItem.empty(SampleItemBuilder.create(mat).getItemStack()));
             }else{
                 remove(i);
             }
@@ -88,17 +88,16 @@ public class RewardWiningGUI extends UpdatingInv {
 
         if(random.nextInt(100) == 10){
             stop();
-            System.out.println("WON");
             for (int x = 0; x < 4; x++) {
                 for (int y = 0; y < 3; y++) {
                     int slot = x+(y*9);
-                    put(slot, ClickableItem.empty(ItemBuilder.create(Material.BLACK_STAINED_GLASS_PANE).getItemStack()));
+                    put(slot, ClickableItem.empty(SampleItemBuilder.create(Material.BLACK_STAINED_GLASS_PANE).getItemStack()));
                 }
             }
             for (int x = 5; x < 9; x++) {
                 for (int y = 0; y < 3; y++) {
                     int slot = x+(y*9);
-                    put(slot, ClickableItem.empty(ItemBuilder.create(Material.BLACK_STAINED_GLASS_PANE).getItemStack()));
+                    put(slot, ClickableItem.empty(SampleItemBuilder.create(Material.BLACK_STAINED_GLASS_PANE).getItemStack()));
                 }
             }
             put(13,ClickableItem.empty(possibleRewards.get(rewardIndex)));

@@ -1,7 +1,7 @@
 package me.titan.titaninvs.examples;
 
 import me.titan.titaninvs.content.ClickableItem;
-import me.titan.titaninvs.content.ItemBuilder;
+import me.titan.titaninvs.content.SampleItemBuilder;
 import me.titan.titaninvs.content.Pagination;
 import me.titan.titaninvs.invs.TitanChestInv;
 import org.bukkit.Material;
@@ -26,26 +26,26 @@ public class ChestInvExample extends TitanChestInv
             page.getItems().add( ClickableItem.empty(en.getValue()));
         }
         pagination(page);
-        setNextPageButton(35,ClickableItem.empty(ItemBuilder.create(Material.ARROW).getItemStack()));
-        setPreviousPageButton(27,ClickableItem.empty(ItemBuilder.create(Material.ARROW).getItemStack()));
+        setNextPageButton(35,ClickableItem.empty(SampleItemBuilder.create(Material.ARROW).getItemStack()));
+        setPreviousPageButton(27,ClickableItem.empty(SampleItemBuilder.create(Material.ARROW).getItemStack()));
     }
 
-    @Override
-    public boolean onItemAdd(int slot, ItemStack item, Player p, int amount) {
-        items.put(slot, item.clone());
-        return false;
-    }
-
-    @Override
-    public boolean onItemRemove(int slot, ItemStack item, Player p, int amount) {
-        if(items.containsKey(slot)){
-            if(amount == item.getAmount()){
-                items.remove(slot);
-            }else{
-                items.put(slot,item);
-            }
-
-        }
-        return false;
-    }
+//    @Override
+//    public boolean onItemAdd(int slot, ItemStack item, Player p, int amount) {
+//        items.put(slot, item.clone());
+//        return false;
+//    }
+//
+//    @Override
+//    public boolean onItemRemove(int slot, ItemStack item, Player p, int amount) {
+//        if(items.containsKey(slot)){
+//            if(amount == item.getAmount()){
+//                items.remove(slot);
+//            }else{
+//                items.put(slot,item);
+//            }
+//
+//        }
+//        return false;
+//    }
 }

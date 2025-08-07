@@ -1,6 +1,6 @@
 package me.titan.titaninvs.test;
 
-import me.titan.titaninvs.content.ItemBuilder;
+import me.titan.titaninvs.content.SampleItemBuilder;
 import me.titan.titaninvs.core.TitanInvAPI;
 import me.titan.titaninvs.examples.*;
 import org.bukkit.Material;
@@ -49,7 +49,7 @@ public class TitanInvTest extends JavaPlugin {
 			int amount = Integer.parseInt(args[1]);
 			List<ItemStack> items = new ArrayList<>(amount);
 			for(int i =0;i<amount;i++){
-				items.add((int) i, ItemBuilder.create(Material.values()[i+1]).name("Item " + i).getItemStack());
+				items.add((int) i, SampleItemBuilder.create(Material.values()[i+1]).name("Item " + i).getItemStack());
 			}
 
 			new RewardWiningGUI(items).open((Player) s,0);

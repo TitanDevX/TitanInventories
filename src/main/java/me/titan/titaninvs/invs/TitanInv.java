@@ -1,17 +1,28 @@
 package me.titan.titaninvs.invs;
 
 import me.titan.titaninvs.content.ClickableItem;
+import me.titan.titaninvs.content.ItemInfo;
 import me.titan.titaninvs.content.Pagination;
+import me.titan.titaninvs.core.TitanInvAPI;
+import me.titan.titaninvs.invs.other.AdvancedInventoryFlags;
+import me.titan.titaninvs.invs.other.InventoryContext;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public abstract class TitanInv extends HashMap<Integer, ClickableItem> implements InventoryHolder {
 
@@ -31,20 +42,42 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
 
     boolean isTitleChanged;
 
+    protected InventoryContext context;
+    int contextObjSize = -1;
+
+    boolean flipingPage;
     public TitanInv(String title, int size) {
         this.title = title;
         this.size = size;
     }
+    public TitanInv() {
+
+    }
+    public void useContext(int objSize){
+       contextObjSize = objSize;
+    }
+    public void define(String title, int size){
+
+        this.title = title;
+        this.size = size;
+    }
+    public Inventory open(Player p) {
+        return open(p,0);
+    }
 
     public Inventory open(Player p, int page) {
 
-        init(p);
+
         if (isCached() && inventory != null) {
             p.openInventory(inventory);
             return inventory;
         }
+        if(contextObjSize != -1 && context == null){
+            context = new InventoryContext(p, new Object[contextObjSize]);
+        }
+        init(p);
         if (pagination != null) {
-            putAll(pagination.getPage(page, size));
+            putAll(pagination.getPage(page));
             if (nextPageButton != null && pagination.hasNext(page)) {
                 put(nextPageButtonSlot, nextPageButton);
             }
@@ -56,7 +89,7 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
 
 
         for (Map.Entry<Integer, ClickableItem> en : entrySet()) {
-            inventory.setItem(en.getKey(), en.getValue().getItem());
+            setInvItem(en.getKey(), en.getValue().getItem());
         }
 
         p.openInventory(inventory);
@@ -69,11 +102,11 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
             open(p,currentPage);
             return;
         }
-
+        inventory.clear();
         clear();
         init(p);
         if (pagination != null) {
-            putAll(pagination.getPage(currentPage, size));
+            putAll(pagination.getPage(currentPage));
             if (nextPageButton != null && pagination.hasNext(currentPage)) {
                 put(nextPageButtonSlot, nextPageButton);
             }
@@ -82,7 +115,7 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
             }
         }
         for (Map.Entry<Integer, ClickableItem> en : entrySet()) {
-            inventory.setItem(en.getKey(), en.getValue().getItem());
+            setInvItem(en.getKey(), en.getValue().getItem());
         }
     }
 
@@ -91,7 +124,6 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
      *
      * <p></p>Note: this does not call any initialize function.
      *
-     * @param p
      */
     public void update(Player p) {
         inventory = getInventory();
@@ -103,11 +135,8 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
         }
 
         for (Map.Entry<Integer, ClickableItem> en : entrySet()) {
-            if(en.getKey() > size){
 
-                throw new RuntimeException("Slot out of bound: " + en.getKey() + " for item with type " + en.getValue().getItem().getType() );
-            }
-            inventory.setItem(en.getKey(), en.getValue().getItem());
+            setInvItem(en.getKey(), en.getValue().getItem());
         }
         if (isTitleChanged) {
             p.openInventory(inventory);
@@ -121,44 +150,45 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
      * Note: this function itself doesn't update the inventory,
      * it's recommend that you call it in {@link #init}
      *
-     * @param pagination
      */
     public void pagination(Pagination pagination) {
         this.pagination = pagination;
+        pagination.setInvSize(size);
     }
 
     /**
      * Open a page, assuming the inventory already is initialized.
      *
-     * @param p
-     * @param page
      */
     protected Inventory openPage(Player p, int page) {
 
 
-        clear();
+     //   clear();
         if (pagination == null) {
-            throw new IllegalCallerException("Cannot open page with no-pagination GUI!");
+            throw new RuntimeException("Cannot open page with no-pagination GUI!");
         }
+        // CLEARING
+        for (Entry<Integer, ClickableItem> en : pagination.getPage(currentPage).entrySet()) {
+            remove(en.getKey());
+        }
+        remove(nextPageButtonSlot);
+        remove(previousPageButtonSlot);
         currentPage = page;
 
         inventory = Bukkit.createInventory(this, size, ChatColor.translateAlternateColorCodes('&', getTitle()));
-
-        putAll(pagination.getPage(page, size));
+        onPageOpen(p,page,inventory);
+        putAll(pagination.getPage(page));
         if (nextPageButton != null && pagination.hasNext(page)) {
             put(nextPageButtonSlot, nextPageButton);
-        } else if (nextPageButton != null) {
-            remove(nextPageButtonSlot);
         }
         if (previousPageButton != null && pagination.hasPrevious(page)) {
             put(previousPageButtonSlot, previousPageButton);
-        } else if (previousPageButton != null) {
-            remove(previousPageButtonSlot);
         }
-        onPageOpen(p,page,inventory);
 
+
+        inventory.clear();
         for (Map.Entry<Integer, ClickableItem> en : entrySet()) {
-            inventory.setItem(en.getKey(), en.getValue().getItem());
+            setInvItem(en.getKey(), en.getValue().getItem());
         }
         p.openInventory(inventory);
         return inventory;
@@ -167,8 +197,17 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
 
     public abstract void init(Player p);
 
+    private void setInvItem(int slot, ItemStack item){
+        if(slot < 0 || slot > size-1){
+            TitanInvAPI.getPlugin().getLogger().severe("[" + getClass().getSimpleName() + " GUI] Item slot is out of valid slot range (slot: " + slot +
+                    ", slot range: 0-" + (size-1) + ") for item: " + item);
+            return;
+        }
+        inventory.setItem(slot, item);
+    }
 
     @Override
+    @Nonnull
     public Inventory getInventory() {
         return inventory;
     }
@@ -177,7 +216,6 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
      * Override this if you want this inventory to be static so it's only initialized 1 time.
      * (you have to cache it yourself but this method will guarantee that the init function don't get called per open call).
      *
-     * @return
      */
     public boolean isCached() {
         return false;
@@ -191,6 +229,26 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
         return ((HashMap<Integer, ClickableItem>) this).get(slot);
     }
 
+    private void prePageFlip(int prevPage, int newPage, Inventory prevInv){
+        flipingPage = true;
+        onPageFlip(prevPage,newPage,prevInv);
+    }
+    private void postPageFlip(int prevPage, int newPage, Inventory prevInv){
+        flipingPage = false;
+        onPostPageFlip(prevPage,newPage,prevInv);
+    }
+    /**
+     * Invoked as soon as the user clicks on next/previous page buttons.
+     */
+    public void onPageFlip(int prevPage, int newPage, Inventory prevInv){
+
+    }
+    /**
+     * Invoked after the user finished flipping a page (and now he is saying the new page).
+     */
+    public void onPostPageFlip(int prevPage, int newPage, Inventory prevInv){
+
+    }
     /**
      * Automatically places next page button with given slot and item,
      *
@@ -205,7 +263,9 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
 
         nextPageButtonSlot = slot;
         (nextPageButton = item).setConsumer((e) -> {
+            prePageFlip(currentPage,currentPage+1,e.getClickedInventory());
             openPage((Player) e.getWhoClicked(), currentPage + 1);
+            postPageFlip(currentPage,currentPage+1,e.getClickedInventory());
         });
     }
 
@@ -222,34 +282,47 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
     public void setPreviousPageButton(int slot, ClickableItem item) {
         previousPageButtonSlot = slot;
         (previousPageButton = item).setConsumer((e) -> {
+            prePageFlip(currentPage,currentPage-1,e.getClickedInventory());
             openPage((Player) e.getWhoClicked(), currentPage - 1);
+            postPageFlip(currentPage,currentPage-1,e.getClickedInventory());
         });
     }
 
+    public void setPreviousPageItemInfo(ItemInfo info){
+        if(info == null) return;
+        setPreviousPageButton(info.getSlot(),ClickableItem.empty(info.getItem()));
+    }
+    public void setNextPageItemInfo(ItemInfo info){
+        if(info == null) return;
+        setNextPageButton(info.getSlot(),ClickableItem.empty(info.getItem()));
+    }
     /**
      * Fills content with the item.
      *
-     * @param item
      */
     public void fill(ClickableItem item) {
        fill(item,true);
     }
+    public void fillEmptyItem(ItemInfo info) {
+        fillEmptyItem(info, true);
+    }
+    public void fillEmptyItem(ItemInfo info, boolean override) {
+        if(info == null) return;
+        fill(ClickableItem.empty(info.getItem()), override);
+    }
     /**
      * Fills content with the item.
      *
-     * @param item
      */
     public void fill(ClickableItem item, boolean override) {
         for (int i = 0; i < size; i++) {
-            if(!override || get(i) == null)
+            if(override || get(i) == null)
                 put(i, item);
         }
     }
     /**
      * Fill a specific column
      *
-     * @param column
-     * @param item
      */
     public void fillColumn(int column, ClickableItem item) {
         fillColumn(column,item,true);
@@ -257,13 +330,11 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
     /**
      * Fill a specific column
      *
-     * @param column
-     * @param item
      */
     public void fillColumn(int column, ClickableItem item,boolean override) {
 
         for (int i = column; i <= size - (9 - (column)); i += 9) {
-            if(!override || get(i) == null)
+            if(override || get(i) == null)
                 put(i, item);
 
         }
@@ -276,12 +347,20 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
         // 54 - (9-1)
 
         for (int i = row * 9; i < (row * 9) + 9; i++) {
-            if(!override || get(i) == null)
+            if(override || get(i) == null)
              put(i, item);
         }
 
     }
 
+    /**
+     * Fills slots between min slot (inclusive) and max slot (inclusive).
+     */
+    public void fillInRange(int minSlot, int maxSlot, ClickableItem item){
+        for(int i = minSlot;i<=maxSlot;i++){
+            set(i,item);
+        }
+    }
     public void fillBorders(ClickableItem item) {
        fillBorders(item,true);
     }
@@ -310,7 +389,7 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
     }
 
     public String getTitle() {
-        return title;
+        return title.replace("%page%",currentPage+1 + "").replace("%pages%",pagination == null ? "" : pagination.getPages() + "");
     }
 
     public int getSize() {
@@ -325,4 +404,30 @@ public abstract class TitanInv extends HashMap<Integer, ClickableItem> implement
         return true;
     }
 
+    public void setEmptyItem(ItemInfo info){
+        if(info == null) return;
+        set(info.getSlot(),ClickableItem.empty(info.getItem()));
+    }
+    public void setItem(ItemInfo info, Consumer<InventoryClickEvent> con){
+        if(info == null) return;
+        set(info.getSlot(),ClickableItem.of(info.getItem(),con));
+    }
+
+    public boolean isFlipingPage() {
+        return flipingPage;
+    }
+    public boolean preventClickOwnInv(){
+        return false;
+    }
+
+    public void onClick(InventoryClickEvent e){}
+    public void onDrag(InventoryDragEvent e){}
+
+    public List<AdvancedInventoryFlags> getAdvancedFlags(){
+        return null;
+    }
+
+    public InventoryContext getContext() {
+        return context;
+    }
 }

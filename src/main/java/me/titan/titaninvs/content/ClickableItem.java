@@ -16,17 +16,17 @@ import java.util.function.Consumer;
  */
 public class ClickableItem {
 
-	ItemStack item;
-	Consumer<InventoryClickEvent> consumer;
+	protected ItemStack item;
+	protected Consumer<InventoryClickEvent> consumer;
 
-	private ClickableItem(ItemStack item, Consumer<InventoryClickEvent> consumer) {
+	protected ClickableItem(ItemStack item, Consumer<InventoryClickEvent> consumer) {
 		this.item = item;
 		this.consumer = consumer;
 	}
 
 	/**
 	 * Creates a @{@link ClickableItem} without a @{@link InventoryClickEvent} consumer.
-	 * Check @{@link ItemBuilder} to create items with ease.
+	 * Check @{@link SampleItemBuilder} to create items with ease.
 	 *
 	 * @param item
 	 * @return
@@ -38,7 +38,7 @@ public class ClickableItem {
 	/**
 	 * Creates a @{@link ClickableItem} with a @{@link InventoryClickEvent} consumer.
 	 *
-	 * Check @{@link ItemBuilder} to create items with ease.
+	 * Check @{@link SampleItemBuilder} to create items with ease.
 	 *
 	 * @param item
 	 * @return
@@ -50,12 +50,12 @@ public class ClickableItem {
 	/**
 	 * Creates a @{@link ClickableItem} with a @{@link InventoryClickEvent} consumer.
 	 *
-	 * Check @{@link ItemBuilder} to create items with ease.
+	 * Check @{@link SampleItemBuilder} to create items with ease.
 	 *
 	 * @param item
 	 * @return
 	 */
-	public static ClickableItem of(ItemBuilder item, Consumer<InventoryClickEvent> consumer ){
+	public static ClickableItem of(SampleItemBuilder item, Consumer<InventoryClickEvent> consumer ){
 		return new ClickableItem(item.getItemStack(),consumer);
 	}
 	public ItemStack getItem() {
@@ -72,5 +72,13 @@ public class ClickableItem {
 
 	public void setConsumer(Consumer<InventoryClickEvent> consumer) {
 		this.consumer = consumer;
+	}
+
+	@Override
+	public String toString() {
+		return "ClickableItem{" +
+				"item=" + item +
+				", consumer=" + consumer +
+				'}';
 	}
 }

@@ -2,7 +2,7 @@ package me.titan.titaninvs.examples;
 
 
 import me.titan.titaninvs.content.ClickableItem;
-import me.titan.titaninvs.content.ItemBuilder;
+import me.titan.titaninvs.content.SampleItemBuilder;
 import me.titan.titaninvs.content.Pagination;
 import me.titan.titaninvs.invs.UpdatingInv;
 import org.bukkit.Material;
@@ -44,8 +44,8 @@ public class ExampleUpdatingInv extends UpdatingInv {
 			page.getItems().add(ClickableItem.of(map.get(i)[currentIndex], (e) -> e.getWhoClicked().sendMessage("Click action: i:" + finalI + " ind:" + currentIndex + ", material: " + map.get(finalI)[currentIndex])));
 		}
 		pagination(page);
-		setNextPageButton(26,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cNext page").getItemStack()));
-		setPreviousPageButton(18,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()));
+		setNextPageButton(26,ClickableItem.empty(SampleItemBuilder.create(Material.ARROW).name("&cNext page").getItemStack()));
+		setPreviousPageButton(18,ClickableItem.empty(SampleItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()));
 	}
 
 	@Override

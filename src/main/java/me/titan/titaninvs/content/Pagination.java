@@ -21,6 +21,8 @@ public class Pagination {
 
 	Map<Integer, Map<Integer,ClickableItem>> cached = new HashMap<>();
 
+	int invSize = 0;
+
 	/**
 	 *
 	 * Creates an instance.
@@ -32,6 +34,10 @@ public class Pagination {
 		this.itemsPerPage = itemsPerPage;
 		this.boxed = isBoxed;
 		itemsOfList(null);
+	}
+
+	public void setInvSize(int invSize) {
+		this.invSize = invSize;
 	}
 
 	/**
@@ -55,10 +61,11 @@ public class Pagination {
 	 * @return number of pages of the gui's pagination
 	 */
 	public int getPages() {
-		if(getItems().size() % itemsPerPage != 0){
-			return (getItems().size()/itemsPerPage)+1;
+		int perPage = getEffectivePerPage();
+		if(getItems().size() % perPage != 0){
+			return (getItems().size()/perPage)+1;
 		}
-		return getItems().size()/itemsPerPage;
+		return getItems().size()/perPage;
 	}
 
 	public boolean isBoxed(){
@@ -86,22 +93,27 @@ public class Pagination {
 	/**
 	 *
 	 * @param page the page to get items of
-	 * @param invSize gui size
 	 * @return content in a page.
 	 */
-	public Map<Integer, ClickableItem> getPage(int page, int invSize){
+	public Map<Integer, ClickableItem> getPage(int page){
 
+		if(invSize == 0){
+			throw new IllegalStateException("Pagination.invSize must be set before accessing pages.");
+		}
 		if(cached.containsKey(page)){
 			return cached.get(page);
 		}
 		Map<Integer, ClickableItem> map = new HashMap<>();
 
 		// 28 56
-		int from = page*itemsPerPage;
+
+		int perPage = getEffectivePerPage();
+		int from = page*perPage;
 		if(items.size() < from){
 			return null;
 		}
-		int to = Math.min(items.size(),(page+1)*itemsPerPage);
+		// 7 * size-18
+		int to = Math.min(items.size(),(page+1)*perPage);
 		int slot = isBoxed() ? 10 : 0;
 		int i = from;
 		while(i<to){
@@ -117,8 +129,19 @@ public class Pagination {
 
 		return map;
 	}
+	private int getEffectivePerPage(){
+		int maxCapacity;
+		if(isBoxed() && invSize >= 27){
+			// 36
+			maxCapacity = 7 * (invSize-18)/9;
+		}else{
+			maxCapacity = invSize;
+		}
+		return Math.min(itemsPerPage, maxCapacity);
+
+	}
 	private void itemsOfList(List<ClickableItem> list){
-		items = new ArrayList<>() {
+		items = new ArrayList<ClickableItem>() {
 			@Override
 			public ClickableItem set(int index, ClickableItem element) {
 				cached.clear();

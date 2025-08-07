@@ -50,7 +50,9 @@ public abstract class UpdatingInv extends TitanInv {
 	public abstract void updateItems(Player player);
 
 	public CompletableFuture<Void> loadItemsAsync(Player player){
-		return CompletableFuture.failedFuture(new UnsupportedOperationException());
+		CompletableFuture<Void> f = new CompletableFuture<>();
+				f.completeExceptionally(new UnsupportedOperationException());
+				return f;
 	}
 
 
@@ -112,7 +114,7 @@ public abstract class UpdatingInv extends TitanInv {
 						it.remove();
 					}
 				}
-				if(updatingInvs.isEmpty()){
+				if(updatingInvs.isEmpty() && globalTask != null){
 					globalTask.cancel();
 					globalTask = null;
 				}
@@ -123,13 +125,17 @@ public abstract class UpdatingInv extends TitanInv {
 
 	@Override
 	public void onOpen(InventoryOpenEvent e) {
-		viewers.add(e.getPlayer().getName());
+		if(!viewers.contains(e.getPlayer().getName()))
+			viewers.add(e.getPlayer().getName());
 	}
 
 	@Override
 	public void onClose(InventoryCloseEvent e) {
 		if(!closeable() && !closed){
-			e.getPlayer().openInventory(getInventory());
+			Bukkit.getScheduler().runTaskLater(TitanInvAPI.getPlugin(),() -> {
+				e.getPlayer().openInventory(getInventory());
+			},1);
+
 			return;
 		}
 		if(updatingInvs.containsKey(e.getPlayer().getName())){
@@ -142,14 +148,14 @@ public abstract class UpdatingInv extends TitanInv {
 				globalTask = null;
 			}
 		}
-		viewers.remove(e.getPlayer().getName());
+		//viewers.remove(e.getPlayer().getName());
 
 	}
 
 	protected void setPageItems(){
 
 		if(pagination == null) return;
-		putAll( pagination.getPage(getCurrentPage(),size));
+		putAll( pagination.getPage(getCurrentPage()));
 		if(nextPageButton != null && pagination.hasNext(getCurrentPage())){
 			put(nextPageButtonSlot,nextPageButton);
 		}

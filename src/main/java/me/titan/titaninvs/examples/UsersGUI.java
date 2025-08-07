@@ -2,7 +2,7 @@ package me.titan.titaninvs.examples;
 
 
 import me.titan.titaninvs.content.ClickableItem;
-import me.titan.titaninvs.content.ItemBuilder;
+import me.titan.titaninvs.content.SampleItemBuilder;
 import me.titan.titaninvs.content.Pagination;
 import me.titan.titaninvs.invs.TitanInv;
 import org.bukkit.Material;
@@ -41,13 +41,13 @@ public class UsersGUI extends TitanInv {
 		List<ClickableItem> items = new ArrayList<>();
 
 		for(User u : users){
-			items.add(ClickableItem.of(ItemBuilder.create(Material.GOLD_BLOCK).name("&a" + u.getName()).lore("","&aLast name: " + u.getLastName()) , (e) -> {
+			items.add(ClickableItem.of(SampleItemBuilder.create(Material.GOLD_BLOCK).name("&a" + u.getName()).lore("","&aLast name: " + u.getLastName()) , (e) -> {
 				e.getWhoClicked().sendMessage("This is an action u clicked user " + u.getName());
 			}));
 		}
 		pagination(new Pagination(7,true).setItems(items));
-		setNextPageButton(26,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cNext page").getItemStack()));
-	 	setPreviousPageButton(18,ClickableItem.empty(ItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()));
+		setNextPageButton(26,ClickableItem.empty(SampleItemBuilder.create(Material.ARROW).name("&cNext page").getItemStack()));
+	 	setPreviousPageButton(18,ClickableItem.empty(SampleItemBuilder.create(Material.ARROW).name("&cPrevious page").getItemStack()));
 
 
 //		Bukkit.getScheduler().runTaskLater(TitanInvAPI.getPlugin(),() -> {

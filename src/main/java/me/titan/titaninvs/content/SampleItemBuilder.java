@@ -1,5 +1,6 @@
 package me.titan.titaninvs.content;
 
+import me.titan.titaninvs.content.itemglow.ItemGlowManager;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
@@ -20,98 +21,98 @@ import java.util.function.Function;
  * @see #create(ItemStack) {@link #create(Material)}
  *
  */
-public class ItemBuilder {
+public class SampleItemBuilder {
 
 	ItemStack current;
 	private static Function<String, String> colorizer;
 
-	public ItemBuilder(ItemStack current) {
+	public SampleItemBuilder(ItemStack current) {
 		this.current = current.clone();
 	}
 
-	public static ItemBuilder create(Material material){
+	public static SampleItemBuilder create(Material material){
 
 		ItemStack item = new ItemStack(material);
-		return new ItemBuilder(item);
+		return new SampleItemBuilder(item);
 
 	}
-	public static ItemBuilder create(Material material, int amount){
+	public static SampleItemBuilder create(Material material, int amount){
 
 		ItemStack item = new ItemStack(material,amount);
-		return new ItemBuilder(item);
+		return new SampleItemBuilder(item);
 
 	}
 
-	public static ItemBuilder create(Material material, short damage){
+	public static SampleItemBuilder create(Material material, short damage){
 
 		ItemStack item = new ItemStack(material, 1, damage);
-		return new ItemBuilder(item);
+		return new SampleItemBuilder(item);
 
 	}
 
 
 
 
-	public static ItemBuilder create(Material material, int amount, short damage) {
+	public static SampleItemBuilder create(Material material, int amount, short damage) {
 
 		ItemStack item = new ItemStack(material, amount, damage);
-		return new ItemBuilder(item);
+		return new SampleItemBuilder(item);
 
 	}
 
-	public static ItemBuilder create(Material material, int amount, byte data) {
+	public static SampleItemBuilder create(Material material, int amount, byte data) {
 
 		ItemStack item = new ItemStack(material, amount, (short) 0, data);
-		return new ItemBuilder(item);
+		return new SampleItemBuilder(item);
 	}
-	public static ItemBuilder create(Material material, int amount, short damage, byte data){
+	public static SampleItemBuilder create(Material material, int amount, short damage, byte data){
 
 		ItemStack item = new ItemStack(material, amount, damage,data);
-		return new ItemBuilder(item);
+		return new SampleItemBuilder(item);
 
 	}
 
-	public static ItemBuilder create(Material material, byte data) {
+	public static SampleItemBuilder create(Material material, byte data) {
 
 		ItemStack item = new ItemStack(material, 1, (short) 0, data);
-		return new ItemBuilder(item);
+		return new SampleItemBuilder(item);
 
 	}
 
-	public static ItemBuilder create(ItemStack item) {
+	public static SampleItemBuilder create(ItemStack item) {
 
-		return new ItemBuilder(item);
+		return new SampleItemBuilder(item);
 
 	}
 
-	public ItemBuilder color(DyeColor color) {
+	public SampleItemBuilder color(DyeColor color) {
 		data(color.getWoolData());
 
 		return this;
 	}
 
-	public ItemBuilder enchants(Map<Enchantment, Integer> enchantMap){
+	public SampleItemBuilder enchants(Map<Enchantment, Integer> enchantMap){
 
 		current.addUnsafeEnchantments(enchantMap);
 
 		return this;
 
 	}
-	public ItemBuilder enchant(Enchantment ench, int level){
+	public SampleItemBuilder enchant(Enchantment ench, int level){
 
 		current.addUnsafeEnchantment(ench,level);
 
 		return this;
 
 	}
-	public ItemBuilder flag(ItemFlag flag){
+	public SampleItemBuilder flag(ItemFlag flag){
 		ItemMeta meta = getItemMeta();
 		meta.addItemFlags(flag);
 		itemMeta(meta);
 		return this;
 
 	}
-	public ItemBuilder flags(List<ItemFlag> flags){
+	public SampleItemBuilder flags(List<ItemFlag> flags){
 		ItemMeta meta = getItemMeta();
 		for(ItemFlag f : flags){
 			meta.addItemFlags(f);
@@ -120,7 +121,7 @@ public class ItemBuilder {
 		return this;
 
 	}
-	public ItemBuilder data(byte data) {
+	public SampleItemBuilder data(byte data) {
 		current.setData(current.getType().getNewData(data));
 
 		return this;
@@ -128,7 +129,7 @@ public class ItemBuilder {
 
 
 
-	public ItemBuilder damage(short damage) {
+	public SampleItemBuilder damage(short damage) {
 		current.setDurability(damage);
 
 		return this;
@@ -142,15 +143,15 @@ public class ItemBuilder {
 		current.setItemMeta(m);
 		return m;
 	}
-	public ItemBuilder itemMeta(ItemMeta meta){
+	public SampleItemBuilder itemMeta(ItemMeta meta){
 		current.setItemMeta(meta);
 		return this;
 	}
-	public ItemBuilder amount(int amount){
+	public SampleItemBuilder amount(int amount){
 		current.setAmount(amount);
 		return this;
 	}
-	public ItemBuilder color( Color color){
+	public SampleItemBuilder color(Color color){
 		if(!current.getType().name().contains("LEATHER_")) current.setType(Material.LEATHER_HELMET);
 		LeatherArmorMeta meta = (LeatherArmorMeta) getItemMeta();
 		meta.setColor(color);
@@ -167,12 +168,12 @@ public class ItemBuilder {
 //		return this;
 //	}
 
-	public ItemBuilder name(String name){
+	public SampleItemBuilder name(String name){
 		ItemMeta m = getItemMeta();
 		m.setDisplayName(colorize(name));
 		return itemMeta(m);
 	}
-	public ItemBuilder lores(String... lores){
+	public SampleItemBuilder lores(String... lores){
 		ItemMeta m = getItemMeta();
 		m.setLore(colorize(Arrays.asList(lores)));
 		return itemMeta(m);
@@ -187,6 +188,30 @@ public class ItemBuilder {
 		}
 		return ChatColor.translateAlternateColorCodes('&',msg);
 	}
+	public boolean isGlow;
+	public SampleItemBuilder glow(){
+		return glow(true);
+	}
+	public SampleItemBuilder glow(boolean flag){
+		if(flag){
+			isGlow = true;
+			current = ItemGlowManager.glow(current);
+		}else{
+			isGlow = false;
+			current = ItemGlowManager.unglow(current);
+		}
+
+		return this;
+	}
+	public SampleItemBuilder customModelData(int data){
+		ItemMeta meta = getItemMeta();
+		try {
+			meta.setCustomModelData(data);
+		}catch (NoSuchMethodError ignored){}
+		current.setItemMeta(meta);
+		return this;
+	}
+
 	public static List<String> colorize(List<String> msgs){
 		if(msgs == null) return null;
 		List<String> list = new ArrayList<>();
@@ -200,7 +225,7 @@ public class ItemBuilder {
 	/*
 	Adds
 	 */
-	public ItemBuilder lore(String... lores){
+	public SampleItemBuilder lore(String... lores){
 		ItemMeta m = getItemMeta();
 		List<String> lore = new ArrayList<>(m.getLore() != null ? m.getLore() : new ArrayList<>());
 				lore.addAll(Arrays.asList(lores));
@@ -210,14 +235,14 @@ public class ItemBuilder {
 	/*
 	Adds
 	 */
-	public ItemBuilder lore(List<String> lores){
+	public SampleItemBuilder lore(List<String> lores){
 		ItemMeta m = getItemMeta();
 		List<String> lore = new ArrayList<>(m.getLore() != null ? m.getLore() : new ArrayList<>());
 		lore.addAll(lores);
 		m.setLore(colorize(lore));
 		return itemMeta(m);
 	}
-	public ItemBuilder setLore(List<String> lores){
+	public SampleItemBuilder setLore(List<String> lores){
 		ItemMeta m = getItemMeta();
 		m.setLore(colorize(lores));
 		return itemMeta(m);
@@ -226,4 +251,7 @@ public class ItemBuilder {
 		return current.clone();
 	}
 
+	public ItemStack readOnlyItem(){
+		return current;
+	}
 }
